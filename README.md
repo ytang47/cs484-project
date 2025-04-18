@@ -1,12 +1,13 @@
-### Set-up
-
-Install Dependencies:
+### Install Dependencies
 https://docs.flutter.dev/get-started/install/windows/mobile
 
+
+### Set-up
 The following code is the Ultralytics Yolo Flutter package
 
 The actual app is in the 'seefood' folder, set the directory to that './seefood/' to get started
 
+### Running the application
 For each new machine: delete the build folder
 
 Use the command 
