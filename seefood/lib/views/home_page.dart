@@ -1,4 +1,3 @@
-// home_page.dart
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -7,31 +6,41 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('YOLO Classifier')),
+      appBar: AppBar(title: const Text('Seefood')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'Welcome to YOLO Classifier',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              'Seefood',
+              style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 40),
             SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/camera'),
-                child: const Text('Live Camera Detection'),
+              width: 150,
+              height: 75,
+              child: ElevatedButton(// Button that leads to camera feature
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  iconColor: Colors.white,
+                  iconSize: 36,
+                ),
+                onPressed: () => Navigator.pushNamed(context, '/camera'), 
+                child: const Icon(Icons.camera_alt),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 40),
             SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
+              width: 150,
+              height: 75,
+              child: ElevatedButton(// Button that leads to upload feature
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  iconColor: Colors.white,
+                  iconSize: 36,
+                ),
                 onPressed: () => Navigator.pushNamed(context, '/upload'),
-                child: const Text('Upload Image for Classification'),
+                child: const Icon(Icons.upload_file),
               ),
             ),
           ],

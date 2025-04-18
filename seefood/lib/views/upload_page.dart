@@ -1,10 +1,7 @@
-// image_upload_page.dart
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ultralytics_yolo/ultralytics_yolo.dart';
-import 'package:ultralytics_yolo/yolo_model.dart';
 
 class ImageUploadPage extends StatefulWidget {
   const ImageUploadPage({super.key});
@@ -42,17 +39,17 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Select Image')),
+      appBar: AppBar(title: const Text('Select An Image')),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : imagePaths.isEmpty
               ? const Center(child: Text('No images found'))
               : GridView.builder(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(12),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
+                    crossAxisCount: 6,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
                   ),
                   itemCount: imagePaths.length,
                   itemBuilder: (context, index) {
@@ -62,6 +59,7 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
                         '/classify',
                         arguments: imagePaths[index],
                       ),
+                      
                       child: Image.asset(imagePaths[index], fit: BoxFit.cover),
                     );
                   },

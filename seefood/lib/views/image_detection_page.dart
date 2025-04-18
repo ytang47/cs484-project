@@ -1,4 +1,3 @@
-// image_detection_page.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -181,8 +180,13 @@ class _ImageDetectionPageState extends State<ImageDetectionPage> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(bottom: 32.0),
+            padding: const EdgeInsets.only(bottom: 128.0),
             child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  iconColor: Colors.white,
+                  iconSize: 36,
+                ),
               onPressed: detectionResult == null || isLoading
                   ? null
                   : () => Navigator.pushNamed(context, '/recipe'),
