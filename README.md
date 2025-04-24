@@ -25,7 +25,7 @@ to begin the application
 ![Upload page](/assets/upload_page.png)
 
 #### Detects food from image:
-![Detection page](/assets/detection_page)
+![Detection page](/assets/detection_page.png)
 
 #### Displays recipes from the prediction:
-![Recipe page](/assets/recipe_page)
+![Recipe page](/assets/recipe_page.png)
