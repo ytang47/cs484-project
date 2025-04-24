@@ -22,7 +22,7 @@ to begin the application
 ![Home page](/assets/home_page.png)
 
 #### Selects which image to upload:
-![Upload page](/assets/upload_page.png)
+![Upload page](/assets/select_image_page.png)
 
 #### Detects food from image:
 ![Detection page](/assets/detection_page_new.png)
