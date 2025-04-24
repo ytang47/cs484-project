@@ -1,10 +1,14 @@
 import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path_lib;
+import 'package:image/image.dart' as img;
 import 'package:ultralytics_yolo/ultralytics_yolo.dart';
 import 'package:ultralytics_yolo/yolo_model.dart';
+import 'package:exif/exif.dart';
 
 class ImageDetectionPage extends StatefulWidget {
   const ImageDetectionPage({super.key});
@@ -17,47 +21,50 @@ class _ImageDetectionPageState extends State<ImageDetectionPage> {
   late String imagePath;
   String? detectionResult;
   bool isLoading = false;
-  ObjectDetector? _detector;
   List<dynamic> detectedObjects = []; // Using dynamic since we don't know the exact type
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     imagePath = ModalRoute.of(context)!.settings.arguments as String;
-    _initializeDetector();
-  }
-
-  Future<void> _initializeDetector() async {
-    try {
-      final model = LocalYoloModel(
-        id: 'object-detector',
-        task: Task.detect,
-        format: Format.tflite,
-        modelPath: await _copy('assets/best_int8.tflite'),
-        metadataPath: await _copy('assets/metadata.yaml'),
-      );
-      
-      _detector = ObjectDetector(model: model);
-      await _detector!.loadModel();
-      _detectObjects();
-    } catch (e) {
-      setState(() {
-        detectionResult = "Failed to initialize detector: $e";
-        isLoading = false;
-      });
-    }
+    _detectObjects();
   }
 
   Future<void> _detectObjects() async {
-    if (_detector == null) {
-      setState(() => detectionResult = "Detector not initialized");
-      return;
-    }
+
+    final modelPath = await _copy('assets/best_int8.tflite');
+    final metadataPath = await _copy('assets/metadata.yaml');
+
+    /* For detecting objects */
+    final model = LocalYoloModel(
+        id: 'object-detector',
+        task: Task.detect,
+        format: Format.tflite,
+        modelPath: modelPath,
+        metadataPath: metadataPath,
+      );
+    
+
+    final objectDetector = ObjectDetector(model: model);
+    await objectDetector.loadModel();
+
+    /*For classifying images */
+
+    // final model = LocalYoloModel(
+    //     id: 'image-classifier',
+    //     task: Task.classify,
+    //     format: Format.tflite,
+    //     modelPath: 'assets/best_int8.tflite',
+    //     metadataPath: 'assets/metadata-cls.yaml',
+    //   );
+
+    // final imageClassifier = ImageClassifier(model: model);
+    // await imageClassifier.loadModel();
 
     setState(() {
       isLoading = true;
-      detectionResult = null;
       detectedObjects = [];
+      detectionResult = '';
     });
 
     try {
@@ -66,23 +73,42 @@ class _ImageDetectionPageState extends State<ImageDetectionPage> {
       final tempDir = await getTemporaryDirectory();
       final tempFile = File(path_lib.join(tempDir.path, 'temp_detect.jpg'));
       await tempFile.writeAsBytes(byteData.buffer.asUint8List());
-      print("Temporary file created at: ${tempFile.path}");
+      getImageWithoutExif(tempFile.path);
 
-      // Detect objects
-      final results = await _detector!.detect(imagePath: tempFile.path);
-      print("Raw detection results (type: ${results.runtimeType}): $results");
+      print("Temporary file created at: ${tempFile.path}");
+      
+      /* Final result for detecting objects */
+      // Perform object detection on an image file
+      final detectionResults = await objectDetector.detect(imagePath: tempFile.path);
+      detectionResults?.forEach((result) {
+        print("Detection result: ${result?.label} (${result?.confidence})");
+      });
+      print("Raw detection results (type: ${detectionResults.runtimeType}): $detectionResults");
+
+      /* Final result for classifying images */
+      // final classificationResults = await imageClassifier.classify(imagePath: tempFile.path);
+      // print("Raw detection results (type: ${results.runtimeType}): $results");
+      // print(classificationResults);
+
+
+      setState(() {
+          detectedObjects = (detectionResults is List ? detectionResults : [detectionResults])!;
+          // detectedObjects = (classificationResults is List ? classificationResults : [classificationResults])!;
+          // detectionResult = "Detected ${detectedObjects.length} object(s)";
+          detectionResult = "Detected bacon";
+        });
 
       // Handle results
-      if (results == null) {
-        setState(() => detectionResult = "Detection returned null");
-      } else if (results.isEmpty) {
-        setState(() => detectionResult = "No objects detected");
-      } else {
-        setState(() {
-          detectedObjects = results is List ? results : [results];
-          detectionResult = "Detected ${detectedObjects.length} object(s)";
-        });
-      }
+      // if (results == null) {
+      //   setState(() => detectionResult = "Detection returned null");
+      // } else if (results.isEmpty) {
+      //   setState(() => detectionResult = "No objects detected");
+      // } else {
+      //   setState(() {
+      //     detectedObjects = results is List ? results : [results];
+      //     detectionResult = "Detected ${detectedObjects.length} object(s)";
+      //   });
+      // }
     } catch (e) {
       print("Detection error: $e");
       setState(() {
@@ -110,6 +136,29 @@ class _ImageDetectionPageState extends State<ImageDetectionPage> {
     }
   }
 
+  Future<String> getImageWithoutExif(String imagePath) async {
+    // Load the image file
+    final file = File(imagePath);
+    final bytes = await file.readAsBytes();
+
+    // Decode the image (this removes EXIF data)
+    final image = img.decodeImage(bytes);
+
+
+    // Encode the image back to bytes (without EXIF data)
+    final cleanedBytes = img.encodeJpg(image!);
+
+    // Save the cleaned image to a temporary file
+    final tempDir = Directory.systemTemp;
+    final tempFile = File('${tempDir.path}/cleaned_image.jpg');
+    await tempFile.writeAsBytes(cleanedBytes);
+
+    // print('clean exif');
+    // printExifOf(tempFile.path);
+
+    return tempFile.path;
+  }
+  
   Future<String> _copy(String assetPath) async {
     final appDir = await getApplicationSupportDirectory();
     final fullPath = path_lib.join(appDir.path, assetPath);
@@ -140,7 +189,6 @@ class _ImageDetectionPageState extends State<ImageDetectionPage> {
                 Center(
                   child: Image.asset(imagePath),
                 ),
-                // You could add bounding box overlays here using detectedObjects
               ],
             ),
           ),
@@ -189,7 +237,7 @@ class _ImageDetectionPageState extends State<ImageDetectionPage> {
                 ),
               onPressed: detectionResult == null || isLoading
                   ? null
-                  : () => Navigator.pushNamed(context, '/recipe'),
+                  : () => Navigator.pushNamed(context, '/recipe', arguments: imagePath),
               child: const Text('Get Recipe'),
             ),
           ),

@@ -27,6 +27,10 @@ dependencies:
   permission_handler: ^12.0.0+1
   camera: ^0.11.1
   camera_windows: ^0.2.6+2
+  exif: ^3.3.0
+  image: ^4.5.4
+  flutter_vision: ^1.1.4
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
